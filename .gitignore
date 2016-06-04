@@ -1,0 +1,12 @@
+*~
+*.log
+*.txt
+*.csv
+#*#
+investigate/*.png
+investigate/*.eps
+data/*.csv
+data/*.txt
+sampling/*
+result/*
+work/result/*
