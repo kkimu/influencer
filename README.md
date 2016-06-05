@@ -1,13 +1,13 @@
-# Superspreaders
-研究
-ソーシャルネットワークにおけるSuperspreader(拡散者・影響力の高いユーザ)を推定する。
-データセット
-- Twitter
-- Facebook
-- APS
-- Twitter_NoW(研究室でクローリングしたデータ)
+# Influencer
+Estimating influence of users from incomplete social networks
 
-##プログラムについて
+## datasets
+- Twitter-mention
+- Facebook
+- APS Journals
+- Twitter-follow
+
+## programs
 ### diffusion.py
 拡散数によるユーザランキングを作成。
 [Twitter,Facebook,APS,Twitter_NoW]/data/diffusion.txtに引用のデータ

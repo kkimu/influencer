@@ -1,8 +1,10 @@
 # coding: utf-8
-#ランダムサンプリング
+# sampling_rand.rb
+# ランダムサンプリング
+# ruby sampling_rand.rb [dataset] [1] [n]
 
 t0 = Time.now
-dataset = "Twitter" #Twitter Facebook APS Twitter_NoW
+dataset = ARGV[0] #Twitter-mention Facebook APS Twitter-follow
 
 id = []
 data = []
@@ -17,6 +19,11 @@ id.uniq!
 len = id.length
 
 percent = [0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+
+for i in 1..ARGV[2]
+path = "#{dataset}/sampling"
+FileUtils.mkdir_p(path) unless FileTest.exist?(path)
+
 
 for n in ARGV[0].to_i..ARGV[1].to_i
   percent.each do |i|

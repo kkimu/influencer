@@ -2,6 +2,8 @@
 *.log
 *.txt
 *.csv
+*.edgelist
+*.idlist
 #*#
 investigate/*.png
 investigate/*.eps
