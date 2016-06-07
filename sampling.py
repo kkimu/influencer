@@ -2,7 +2,6 @@
 # py sampling.py <dataset name> <n1> <n2> <method> [number of seed nodes]
 # datasetのネットワークからサンプリングする
 
-
 import time
 import os
 from collections import defaultdict
@@ -10,8 +9,8 @@ import random
 import sys
 from operator import itemgetter
 
-percent = [1, 2, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90] #サンプリングレート
-
+#percent = [1, 2, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90] #サンプリングレート
+percent = [1]
 
 def rand(dataset, n1, n2):
     t0 = time.time()
@@ -53,7 +52,7 @@ def rand(dataset, n1, n2):
             print("Time_{}per_{}:{}".format(p,n,time.time() -t1))
         print("Time_{}:{}".format(n,time.time() -t0))
 
-
+# 幅優先探索
 def bfs(dataset, n1, n2, seednum):
     t0 = time.time()
     t1 = time.time()
@@ -82,8 +81,10 @@ def bfs(dataset, n1, n2, seednum):
             random.shuffle(idlist)
 
             # 取得するノードを選択
-            target_id = select_bfs(num,idlist,al)
+            target_id = select_bfs_multiple_seed(num, idlist, al, seednum)
+                
             print(len(target_id),"\t",end="")
+
 
             # パスとファイル名を指定して出力
             path = "{}/sampling/{}".format(dataset, n)
@@ -102,13 +103,77 @@ def select_rand(num, idlist):
 
     return target_id
 
-# idリスト全体からnumだけノードを選択する
+# 幅優先探索でidリスト全体からnumだけノードを選択する
 def select_bfs(num, idlist, al):
     target_id = defaultdict(int)
-    for j in range(0, num):
-        target_id[idlist[j]] = 1
+    random.shuffle(idlist)
+    queue = []
+    idnum = 0
+    index = 0
+    while idnum < num:
+        if len(queue) == 0:
+            for index2 in range(index,len(idlist)):
+                if target_id[idlist[index2]] != 1:
+                    target_id[idlist[index2]] = 1
+                    queue.append(idlist[index2])
+                    idnum += 1
+                    index += 1
+                    break
+                else:
+                    index += 1
+        else:
+            node = queue.pop(0)
+            if len(al[node]) >= 1:
+                for nei in al[node]:
+                    if idnum < num:
+                        if target_id[nei] != 1:
+                            target_id[nei] = 1
+                            idnum += 1
+                            queue.append(nei)
+                    else:
+                        break
 
     return target_id
+
+# 幅優先探索 複数のシードノードを用いる場合
+def select_bfs_multiple_seed(num, idlist, al, seednum):
+    target_id = defaultdict(int)
+    random.shuffle(idlist)
+    queue = []*seednum
+    for i in range(0,seednum):
+        queue.append([])
+    
+    idnum = 0
+    while idnum < num:
+        for i in range(0,seednum):
+            if idnum < num:
+                if len(queue[i]) == 0:
+                    node = random.choice(idlist)
+                    while target_id[node] == 1:
+                        node = random.choice(idlist)
+                        
+                    target_id[node] = 1
+                    queue[i].append(node)
+                    idnum += 1
+                    print("i={}, node={}, idnum={}".format(i,node,idnum))
+                    
+                else:
+                    node = queue[i].pop(0)
+                    if len(al[node]) >= 1:
+                        print("i={}, node={}, {}".format(i,node,al[node]))
+                        for nei in al[node]:
+                            if idnum < num:
+                                if target_id[nei] != 1:
+                                    target_id[nei] = 1
+                                    idnum += 1
+                                    queue[i].append(nei)
+                                    print("i={}, nei={}, idnum={}".format(i, nei, idnum))
+                            else:
+                                break
+            else:
+                break
+            
+    return target_id    
 
 
 # pathのエッジリストからidの集合を得る
@@ -124,7 +189,7 @@ def get_id_list(path):
 # pathのエッジリストからidの集合と隣接ノードが入ったハッシュを得る
 def get_id_list_and_adjacency_list(path):
     idset = set() # idの集合
-    al = defaultdict(set) # 隣接ノードが入ったハッシュ keyがノード、valueがその隣接ノード
+    al = defaultdict(list) # 隣接ノードが入ったハッシュ keyがノード、valueがその隣接ノード
     for line in open(path):
         sp = line.strip().split(" ")
         al[sp[0]].append(sp[1])
