@@ -12,3 +12,4 @@ data/*.txt
 sampling/*
 result/*
 work/result/*
+noise_redution/*

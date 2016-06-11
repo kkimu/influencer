@@ -9,8 +9,8 @@ import random
 import sys
 from operator import itemgetter
 
-#percent = [1, 2, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90] #サンプリングレート
-percent = [1]
+percent = [1, 2, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90] #サンプリングレート
+#percent = [1]
 
 def rand(dataset, n1, n2):
     t0 = time.time()
@@ -81,14 +81,14 @@ def bfs(dataset, n1, n2, seednum):
             random.shuffle(idlist)
 
             # 取得するノードを選択
-            target_id = select_bfs_multiple_seed(num, idlist, al, seednum)
+            target_id = select_bfs(num, idlist, al, seednum)
                 
             print(len(target_id),"\t",end="")
 
 
             # パスとファイル名を指定して出力
             path = "{}/sampling/{}".format(dataset, n)
-            filename = "bfs_{}per".format(p)
+            filename = "bfs_{}per_seed{}".format(p,seednum)
             output(path, filename, link_path, target_id)
 
             
@@ -104,7 +104,7 @@ def select_rand(num, idlist):
     return target_id
 
 # 幅優先探索でidリスト全体からnumだけノードを選択する
-def select_bfs(num, idlist, al):
+def select_bfs_old(num, idlist, al):
     target_id = defaultdict(int)
     random.shuffle(idlist)
     queue = []
@@ -136,7 +136,7 @@ def select_bfs(num, idlist, al):
     return target_id
 
 # 幅優先探索 複数のシードノードを用いる場合
-def select_bfs_multiple_seed(num, idlist, al, seednum):
+def select_bfs(num, idlist, al, seednum):
     target_id = defaultdict(int)
     random.shuffle(idlist)
     queue = []*seednum
@@ -155,19 +155,16 @@ def select_bfs_multiple_seed(num, idlist, al, seednum):
                     target_id[node] = 1
                     queue[i].append(node)
                     idnum += 1
-                    print("i={}, node={}, idnum={}".format(i,node,idnum))
                     
                 else:
                     node = queue[i].pop(0)
                     if len(al[node]) >= 1:
-                        print("i={}, node={}, {}".format(i,node,al[node]))
                         for nei in al[node]:
                             if idnum < num:
                                 if target_id[nei] != 1:
                                     target_id[nei] = 1
                                     idnum += 1
                                     queue[i].append(nei)
-                                    print("i={}, nei={}, idnum={}".format(i, nei, idnum))
                             else:
                                 break
             else:
