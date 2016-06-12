@@ -12,44 +12,50 @@ def recursive(dataset, n1, n2, t, tn):
     t0 = time.time()
     directed = True
 
-    # データセットがTwitter-follow以外ならlink pathを設定
-    if dataset != "Twitter-follow":
-        link_path = "./{}/data/link.txt".format(dataset)
     # データセットがFacebookかAPSならdirectedにFalseを設定
     if dataset == "Facebook" or dataset == "APS":
         directed = False
         
     for n in range(n1,n2+1):
+        
         t1 = time.time()
-        # 出力するpathを設定
+
+        # データセットがTwitter-follow以外ならlink pathを設定
+        if dataset != "Twitter-follow":
+            link_path = "./{}/data/link.txt".format(dataset)
+        # データセットがTwitter-followならlinkとidlistを別で設定
+        elif dataset == "Twitter-follow":
+            link_path = "./Twitter-follow/data/link_{}.txt".format(n)
+            idset = set()
+            for line in open("./Twitter-follow/data/idlist_{}.txt".format(n)):
+                idset.add(line.strip())
+            print("len(idset) = {}".format(len(idset)))
+            idlen = len(idset)
+
+         # 出力するpathを設定
         out_path = "./{}/noise_reduction/{}".format(dataset, n)
         # ディレクトリがなければ作る
         if os.path.exists(out_path) == False:
             os.makedirs(out_path)
 
-        # データセットがTwitter-followならlinkとidlistを別で設定
-        if dataset == "Twitter-follow":
-            link_path = "./Twitter-follow/data/link_{}.txt".format(n)
-            idset = set()
-            for line in open("./Twitter-follow/data/idlist_{}.txt".format(n)):
-                idset.add(line.strip())
-        
-            print("len(idset) = {}".format(len(idset)))
-            idlen = len(idset)
-
-
         # 再帰的にノイズ除去する回数tn 繰り返す
         for tn in range(0,tn+1):
             t2 = time.time()
-            cmd = "R --vanilla --slave --args {} {}/tn{}_ {} < c_deg_clo_pr.R".format(link_path, out_path, tn, directed)
+
+            ### 影響力の指標を計算する
+            # 次数中心性、PageRank、近接中心性
+            cmd = "R --vanilla --slave --args {} {}/T{}_tn{}_ {} < c_deg_clo_pr.R".format(link_path, out_path, t, tn, directed)
             print("Start '",cmd,"'",sep="")
             ret = subprocess.check_output(cmd,shell=True)
             print("End")
-            #print(ret)
+
+            # CI
+            cmd2 = "./CI {}.adjacencylist".format(link_path)
+            ret
 
             #次数で計算した結果をrankに入れる
             rank = []
-            for line in open("{}/tn{}_deg.rank".format(out_path, tn)):
+            for line in open("{}/T{}_tn{}_deg.rank".format(out_path, t, tn)):
                 rank.append(line.split(" ")[0])
                 
             # 計算に含まれなかったノードをランキングの後ろに追加
@@ -86,6 +92,9 @@ def recursive(dataset, n1, n2, t, tn):
 
             print("tn = {}\tTime:{}".format(tn, time.time()-t2))
 
+        print("n = {}\tTime:{}".format(n, time.time()-t1))
+
+    print("Time:{}".format(n, time.time()-t0))    
             
             
             

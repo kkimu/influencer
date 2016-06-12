@@ -4,12 +4,14 @@
 *.csv
 *.edgelist
 *.idlist
+*.adjacencylist
+core*
 #*#
 investigate/*.png
 investigate/*.eps
 data/*.csv
 data/*.txt
-sampling/*
+sampling/**
 result/*
 work/result/*
-noise_redution/*
+noise_reduction/
