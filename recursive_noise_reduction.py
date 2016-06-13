@@ -31,7 +31,7 @@ def recursive(dataset, n1, n2, t, tn):
                 idset.add(line.strip())
             print("len(idset) = {}".format(len(idset)))
             idlen = len(idset)
-
+            
          # 出力するpathを設定
         out_path = "./{}/noise_reduction/{}".format(dataset, n)
         # ディレクトリがなければ作る
