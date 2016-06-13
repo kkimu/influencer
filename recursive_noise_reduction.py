@@ -22,10 +22,10 @@ def recursive(dataset, n1, n2, t, tn):
 
         # データセットがTwitter-follow以外ならlink pathを設定
         if dataset != "Twitter-follow":
-            link_path = "./{}/data/link.txt".format(dataset)
+            link_path = "./{}/data/link".format(dataset)
         # データセットがTwitter-followならlinkとidlistを別で設定
         elif dataset == "Twitter-follow":
-            link_path = "./Twitter-follow/data/link_{}.txt".format(n)
+            link_path = "./Twitter-follow/data/link_{}".format(n)
             idset = set()
             for line in open("./Twitter-follow/data/idlist_{}.txt".format(n)):
                 idset.add(line.strip())
@@ -44,18 +44,19 @@ def recursive(dataset, n1, n2, t, tn):
 
             ### 影響力の指標を計算する
             # 次数中心性、PageRank、近接中心性
-            cmd = "R --vanilla --slave --args {} {}/T{}_tn{}_ {} < c_deg_clo_pr.R".format(link_path, out_path, t, tn, directed)
+            cmd = "R --vanilla --slave --args {}.edgelist {}/T{}_tn{}_ {} < c_deg_clo_pr.R".format(link_path, out_path, t, tn, directed)
             print("Start '",cmd,"'",sep="")
             ret = subprocess.check_output(cmd,shell=True)
             print("End")
 
             # CI
-            cmd2 = "./CI {}.adjacencylist".format(link_path)
-            ret
+            cmd2 = "./CI {}.adjacencylist 2".format(link_path)
+            ret = subprocess.check_output(cmd,shell=True)
 
-            #次数で計算した結果をrankに入れる
+            
+            #指定した指標で計算した結果をrankに入れる
             rank = []
-            for line in open("{}/T{}_tn{}_deg.rank".format(out_path, t, tn)):
+            for line in open("{}/T{}_tn{}_{}.rank".format(out_path, t, tn)):
                 rank.append(line.split(" ")[0])
                 
             # 計算に含まれなかったノードをランキングの後ろに追加
@@ -85,11 +86,15 @@ def recursive(dataset, n1, n2, t, tn):
                 # 新しいid集合に含まれるid間のエッジのみを取得
                 if sp[0] in idset and sp[1] in idset:
                     lines.append(line)
-            link_path = "./{}/data/reducted_deg_{}.edgelist".format(dataset, tn+1)
-            with open(link_path,"w") as f:
+            link_path = "./{}/data/reducted_deg_{}".format(dataset, tn+1)
+            with open("{}.edgelist".format(link_path),"w") as f:
                 f.writelines(lines)
             print("New edgelist is created at {}".format(link_path))
 
+            
+
+
+            
             print("tn = {}\tTime:{}".format(tn, time.time()-t2))
 
         print("n = {}\tTime:{}".format(n, time.time()-t1))
