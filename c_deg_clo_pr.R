@@ -21,13 +21,13 @@ write.table(deg[order(deg,decreasing=T)],fn_deg,quote=F,col.names=F)
 print("degree")
 print(proc.time() - t0)
 
-#fn_clo <- paste(output,"clo.rank",sep="")
-#clo <- closeness(g, mode="in")
-#write.table(clo[order(clo,decreasing=T)],fn_clo,quote=F,col.names=F)
+fn_clo <- paste(output,"clo.rank",sep="")
+clo <- closeness(g, mode="in")
+write.table(clo[order(clo,decreasing=T)],fn_clo,quote=F,col.names=F)
 
 print("closeness")
 print(proc.time() - t0)
-c
+
 fn_pr <- paste(output,"pr.rank",sep="")
 pr <- page.rank(g)$vector
 write.table(pr[order(pr,decreasing=T)],fn_pr,quote=F,col.names=F)

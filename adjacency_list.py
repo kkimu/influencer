@@ -14,9 +14,9 @@ max = 0
 al = defaultdict(set)
 for line in open(input):
     sp = line.strip().split(" ")
-    if directed == "T":
+    if directed == "True":
         al[int(sp[0])].add(int(sp[1]))
-    elif directed == "F":
+    elif directed == "False":
         al[int(sp[0])].add(int(sp[1]))
         al[int(sp[1])].add(int(sp[0]))
     else:

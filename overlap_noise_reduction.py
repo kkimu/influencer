@@ -7,7 +7,7 @@ from collections import defaultdict
 import sys
 import os
 
-cent = ["deg","pr"]
+cent = ["deg","pr","clo","ci"]
 result = defaultdict(lambda : defaultdict(lambda : defaultdict(int)))
 ave = defaultdict(lambda : defaultdict(int))
 
@@ -17,7 +17,7 @@ n1 = int(argv[2])
 n2 = int(argv[3])
 t = int(argv[4])
 tN = int(argv[5])
-
+index = str(argv[6])
 #リツイート数による正解のランキングをrt_rankに入れる
 rt_rank = []
 rt_num = defaultdict(int)
@@ -41,18 +41,19 @@ for n in range(n1,n2+1):
             rt_rank.append(sp[0])
             rt_num[sp[0]] = sp[1]
         overlap = int(len(rt_rank)*0.01)
+
     for tn in range(0,tN+1):
         for c in cent:
             rank = []
-            for line in open("./{}/noise_reduction/{}/T{}_tn{}_{}.rank".format(dataset,n,t,tn,c)):
+            for line in open("./{}/noise_reduction/{}/{}_T{}_tn{}_{}.rank".format(dataset,n,index, t,tn,c)):
                 rank.append(line.split(" ")[0])
         
             result[n][tn][c] = (len(set(rank[:overlap]) & set(rt_rank[:overlap]))/overlap)
             print("n={},tn={},c={},result[n][tn][c]={}".format(n,tn,c,result[n][tn][c]))
 
     #出力
-    with open("{}/{}_T{}_n{}.csv".format(out_path,dataset,t,n),"w") as f:
-        f.write("#T{}%\n#Overlap1%,Degree,PageRank\n".format(t))
+    with open("{}/{}_{}_T{}_n{}.csv".format(out_path, dataset, index ,t,n),"w") as f:
+        f.write("#{} T{}%\n#Overlap1%,Degree,PageRank,Closeness,CI\n".format(index, t))
         for tn in range(0,tN+1):
             f.write(str(tn))
             for c in cent:
@@ -67,8 +68,8 @@ for tn in range(0,tN+1):
         ave[tn][c] = sum/(n2-n1+1)
 
 
-with open("{}/{}_T{}.csv".format(out_path,dataset,t),"w") as f:
-    f.write("#T{}%\n#Overlap1%,Degree,PageRank\n".format(t))
+with open("{}/{}_{}_T{}.csv".format(out_path,dataset, index, t),"w") as f:
+    f.write("#{} T{}%\n#Overlap1%,Degree,PageRank,Closeness,CI\n".format(index, t))
     for tn in range(0,tN+1):
         f.write(str(tn))
         for c in cent:

@@ -12,7 +12,6 @@ t0 = time.time()
 dataset = sys.argv[1]
 diffusion = defaultdict(set)
 for line in open("{}/data/diffusion.txt".format(dataset)):
-#for line in oepn("data/diffusion.txt"):
     sp = line.strip().split(" ")
     diffusion[sp[1]].add(sp[0])
     
