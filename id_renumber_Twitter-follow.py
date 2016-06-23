@@ -8,7 +8,7 @@ from collections import defaultdict
 
 for n in range(1,101):
     t1 = time.time()
-    link = "./Twitter-follow/data/link_{}.txt".format(n)
+    link = "./Twitter-follow/data/link_{}.edgelist".format(n)
     diffusion = "./Twitter-follow/data/diffusion_result_{}.txt".format(n)
     idl = "./Twitter-follow/data/idlist_{}.txt".format(n)
     output = "./Twitter-follow/data/conversion_table_{}.txt".format(n)
@@ -19,6 +19,15 @@ for n in range(1,101):
     for line in open(idl):
         idset.add(int(line.strip()))
 
+    idlist = sorted(list(idset))
+    
+    count = 1
+    for id in idlist:
+        if conversion_table[id] == 0:
+            conversion_table[id] = count
+            count += 1
+
+
     dif_data = []
     for line in open(diffusion):
         dif_data.append(line)
@@ -26,15 +35,7 @@ for n in range(1,101):
     for line in open(link):
         link_data.append(line)
 
-    idlist = sorted(list(idset))
-    #print(idlist)
-    count = 1
-    for id in idlist:
-        if conversion_table[id] == 0:
-            conversion_table[id] = count
-            count += 1
-
-        
+    
     with open(link,"w") as f:
         for line in link_data:
             sp = line.strip().split(" ")

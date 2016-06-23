@@ -7,7 +7,8 @@ import os
 import random
 import sys
 import subprocess
-import
+import gc
+from collections import defaultdict
 
 def recursive(dataset, n1, n2, t, tn, index):
     t0 = time.time()
@@ -51,26 +52,33 @@ def recursive(dataset, n1, n2, t, tn, index):
         for tn in range(0,tn+1):
             t2 = time.time()
 
-            print("#############################")
+            print("################################################")
             print("n={}, tn={}".format(n,tn))
-            print("#############################")
+            print("################################################")
 
-            # adjacency listを出力
-            adjacency_list("{}.edgelist".format(link_path), "{}.adjacencylist".format(link_path), directed)
-            print("New adjacency list is created at {}.adjacencylist".format(link_path))
             
             ### 影響力の指標を計算する
             # 次数中心性、PageRank、近接中心性
-            cmd = "R --vanilla --slave --args {}.edgelist {}/{}_T{}_tn{}_ {} < c_deg_clo_pr.R >log/c_{}_{}_T{}_tn{}.log".format(link_path, out_path, index, t, tn, directed, dataset, index, t, tn)
+            if dataset == "Twitter-mention" or dataset == "APS":
+                cmd = "R --vanilla --slave --args {}.edgelist {}/{}_T{}_tn{}_ {} < c_deg_pr.R >log/c_{}_{}_T{}_tn{}.log".format(link_path, out_path, index, t, tn, directed, dataset, index, t, tn)
+            else:
+                cmd = "R --vanilla --slave --args {}.edgelist {}/{}_T{}_tn{}_ {} < c_deg_clo_pr.R >log/c_{}_{}_T{}_tn{}.log".format(link_path, out_path, index, t, tn, directed, dataset, index, t, tn)
+                
             print("Start '",cmd,"'",sep="")
             ret = subprocess.check_output(cmd,shell=True)
             print("End")
 
             # CI
-            cmd = "./CI_output {}.adjacencylist 2 {}/{}_T{}_tn{}_ci.rank >log/c_{}_{}_T{}_tn{}_CI.log".format(link_path,out_path, index, t, tn, dataset, index, t, tn)
-            print("Start '",cmd,"'",sep="")
-            ret = subprocess.check_output(cmd,shell=True)
-            print("End")
+            if dataset == "Twitter-follow" or dataset == "Facebook":
+                 # adjacency listを出力
+                adjacency_list("{}.edgelist".format(link_path), "{}.adjacencylist".format(link_path), directed)
+                print("New adjacency list is created at {}.adjacencylist".format(link_path))
+            
+                cmd = "./CI_output {}.adjacencylist 3 {}/{}_T{}_tn{}_ci.rank >log/c_{}_{}_T{}_tn{}_CI.log".format(link_path,out_path, index, t, tn, dataset, index, t, tn)
+                print("Start '",cmd,"'",sep="")
+                ret = subprocess.check_output(cmd,shell=True)
+                print("End")
+
             
             #指定した指標で計算した結果をrankに入れる
             rank = []
@@ -111,7 +119,7 @@ def recursive(dataset, n1, n2, t, tn, index):
                 if int(sp[0]) in idset and int(sp[1]) in idset:
                     lines.append(line)
             # 出力先
-            link_path = "./{}/noise_reduction/{}/data/reducted_{}_tn{}".format(dataset, n, index, tn+1)
+            link_path = "./{}/noise_reduction/{}/data/reducted_{}_T{}_tn{}".format(dataset, n, index, t, tn+1)
             # ディレクトリがなければ作る
             if os.path.exists("./{}/noise_reduction/{}/data".format(dataset, n)) == False:
                 os.makedirs(link_path)
@@ -120,18 +128,13 @@ def recursive(dataset, n1, n2, t, tn, index):
                 f.writelines(lines)
             print("New edgelist is created at {}".format(link_path))
 
-            # adjacency listを出力
-            #cmd = "python3.4 adjacency_list.py {}.edgelist {}.adjacencylist {}".format(link_path, link_path, directed)
-            #print("Start '",cmd,"'",sep="")
-            #ret = subprocess.check_output(cmd,shell=True)
-            #print("End")
             
             print("tn = {}\tTime:{}\n".format(tn, time.time()-t2))
 
         print("n = {}\tTime:{}".format(n, time.time()-t1))
 
-    print("Total Time:{}".format(time.time()-t0))    
-            
+    print("Total Time:{}".format(time.time()-t0))
+    
             
 def adjacency_list(input,output,directed):
     max = 0
@@ -156,7 +159,7 @@ def adjacency_list(input,output,directed):
             if al[id] != None:
                 alist = list(al[id])
                 for id2 in sorted(alist):
-                    f.write(" {}".format(id2)
+                    f.write(" {}".format(id2))
             f.write("\n")
         
                 

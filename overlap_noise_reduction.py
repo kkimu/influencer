@@ -26,9 +26,14 @@ if dataset != "Twitter-follow":
     for line in open(dif_path):
         sp = line.strip().split(" ")
         rt_rank.append(sp[0])
-    overlap = int(len(rt_rank)*0.01)
 
-
+    idset = set()
+    for line in open("{}/data/link.edgelist".format(dataset)):
+        sp = line.strip().split(" ")
+        idset.add(sp[0])
+        idset.add(sp[1])
+    overlap = int(len(idset)*0.01)
+        
 out_path = "./result_noise_reduction"
 if os.path.exists(out_path) == False:
     os.makedirs(out_path)
@@ -40,7 +45,12 @@ for n in range(n1,n2+1):
             sp = line.strip().split(" ")
             rt_rank.append(sp[0])
             rt_num[sp[0]] = sp[1]
-        overlap = int(len(rt_rank)*0.01)
+
+        idset = set()
+        for line in open("{}/data/idlist_{}.txt".format(dataset,n)):
+            idset.add(line.strip)
+        overlap = int(len(idset)*0.01)
+        print("ovrelap",overlap)
 
     for tn in range(0,tN+1):
         for c in cent:
