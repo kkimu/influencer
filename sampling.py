@@ -14,11 +14,11 @@ percent = [1, 2, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90] #サンプリングレ�
 
 def rand(dataset, n1, n2):
     t0 = time.time()
-    t1 = time.time()
     
     # データセットがTwitter-follow以外なら、./{dataset}/data/link.txtを使う
     if dataset != "Twitter-follow":
-        link_path = "./{}/data/link.txt".format(dataset)
+        t1 = time.time()
+        link_path = "./{}/data/link.edgelist".format(dataset)
         idlist = get_id_list(link_path)
         idlen = len(idlist)
 
@@ -36,7 +36,7 @@ def rand(dataset, n1, n2):
         # 取得する割合%ごとに繰り返し
         for p in percent:
             t1 = time.time()
-            num = int(idlen*p*0.01) # 取得するノード数
+            num = round(idlen*p*0.01) # 取得するノード数
             random.shuffle(idlist)
 
             # 取得するノードを選択
@@ -49,8 +49,8 @@ def rand(dataset, n1, n2):
             output(path, filename, link_path, target_id)
 
             
-            print("Time_{}per_{}:{}".format(p,n,time.time() -t1))
-        print("Time_{}:{}".format(n,time.time() -t0))
+            print("{} {}per Time:{}".format(n,p,time.time() -t1))
+        print("{} Time:{}".format(n,time.time() -t0))
 
 # 幅優先探索
 def bfs(dataset, n1, n2, seednum):
@@ -59,7 +59,7 @@ def bfs(dataset, n1, n2, seednum):
     
     # データセットがTwitter-follow以外なら、./{dataset}/data/link.txtを使う
     if dataset != "Twitter-follow":
-        link_path = "./{}/data/link.txt".format(dataset)
+        link_path = "./{}/data/link.edgelist".format(dataset)
         idlist,al = get_id_list_and_adjacency_list(link_path)
         idlen = len(idlist)
 
@@ -77,12 +77,11 @@ def bfs(dataset, n1, n2, seednum):
         # 取得する割合%ごとに繰り返し
         for p in percent:
             t1 = time.time()
-            num = int(idlen*p*0.01) # 取得するノード数
+            num = round(idlen*p*0.01) # 取得するノード数
             random.shuffle(idlist)
 
             # 取得するノードを選択
-            target_id = select_bfs(num, idlist, al, seednum)
-                
+            target_id = select_bfs(num, idlist, al)  
             print(len(target_id),"\t",end="")
 
 
@@ -92,8 +91,8 @@ def bfs(dataset, n1, n2, seednum):
             output(path, filename, link_path, target_id)
 
             
-            print("Time_{}per_{}:{}".format(p,n,time.time() -t1))
-        print("Time_{}:{}".format(n,time.time() -t0))
+            print("{} {}per Time:{}".format(n,p,time.time() -t1))
+        print("{} Time:{}".format(n,time.time() -t0))
 
 # idリスト全体からnumだけノードを選択する
 def select_rand(num, idlist):
@@ -104,27 +103,30 @@ def select_rand(num, idlist):
     return target_id
 
 # 幅優先探索でidリスト全体からnumだけノードを選択する
-def select_bfs_old(num, idlist, al):
+def select_bfs(num, idlist, al):
     target_id = defaultdict(int)
     random.shuffle(idlist)
     queue = []
     idnum = 0
-    index = 0
+    i = 0
     while idnum < num:
         if len(queue) == 0:
-            for index2 in range(index,len(idlist)):
-                if target_id[idlist[index2]] != 1:
-                    target_id[idlist[index2]] = 1
-                    queue.append(idlist[index2])
+            for j in range(i,len(idlist)):
+                node = idlist[j]
+                if target_id[node] != 1:
+                    target_id[node] = 1
+                    queue.append(node)
                     idnum += 1
-                    index += 1
+                    i += 1
                     break
                 else:
-                    index += 1
+                    i += 1
         else:
             node = queue.pop(0)
             if len(al[node]) >= 1:
-                for nei in al[node]:
+                neighbors = al[node]
+                random.shuffle(neighbors)
+                for nei in neighbors:
                     if idnum < num:
                         if target_id[nei] != 1:
                             target_id[nei] = 1
@@ -136,7 +138,7 @@ def select_bfs_old(num, idlist, al):
     return target_id
 
 # 幅優先探索 複数のシードノードを用いる場合
-def select_bfs(num, idlist, al, seednum):
+def select_bfs_multiseeds(num, idlist, al, seednum):
     target_id = defaultdict(int)
     random.shuffle(idlist)
     queue = []*seednum
