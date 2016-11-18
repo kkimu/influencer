@@ -7,7 +7,8 @@ from collections import defaultdict
 import sys
 import os
 
-cent = ["deg","pr","clo","ci"]
+#cent = ["deg","pr","clo","ci"]
+cent = ["deg","pr"]
 result = defaultdict(lambda : defaultdict(lambda : defaultdict(int)))
 ave = defaultdict(lambda : defaultdict(int))
 
@@ -21,6 +22,8 @@ index = str(argv[6])
 #リツイート数による正解のランキングをrt_rankに入れる
 rt_rank = []
 rt_num = defaultdict(int)
+overlap = 0
+
 if dataset != "Twitter-follow":
     dif_path = "{}/data/diffusion_result.txt".format(dataset)
     for line in open(dif_path):
@@ -32,8 +35,10 @@ if dataset != "Twitter-follow":
         sp = line.strip().split(" ")
         idset.add(sp[0])
         idset.add(sp[1])
-    overlap = int(len(idset)*0.01)
-        
+    overlap = round(len(idset)*0.01)
+
+print("overlap{}".format(overlap))
+    
 out_path = "./result_noise_reduction"
 if os.path.exists(out_path) == False:
     os.makedirs(out_path)
@@ -49,7 +54,7 @@ for n in range(n1,n2+1):
         idset = set()
         for line in open("{}/data/idlist_{}.txt".format(dataset,n)):
             idset.add(line.strip)
-        overlap = int(len(idset)*0.01)
+        overlap = round(len(idset)*0.01)
         print("ovrelap",overlap)
 
     for tn in range(0,tN+1):
@@ -59,6 +64,7 @@ for n in range(n1,n2+1):
                 rank.append(line.split(" ")[0])
         
             result[n][tn][c] = (len(set(rank[:overlap]) & set(rt_rank[:overlap]))/overlap)
+            print("len(set(rank[:overlap]))={}, len(set(rt_rank[:overlap]))={}".format(len(set(rank[:overlap])),len(set(rt_rank[:overlap]))))
             print("n={},tn={},c={},result[n][tn][c]={}".format(n,tn,c,result[n][tn][c]))
 
     #出力

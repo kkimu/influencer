@@ -42,7 +42,7 @@ def recursive(dataset, n1, n2, t, tn, index):
             print("len(idset) = {}".format(len(idset)))
             idlen = len(idset)
             
-         # 出力するpathを設定
+        # 出力するpathを設定
         out_path = "./{}/noise_reduction/{}".format(dataset, n)
         # ディレクトリがなければ作る
         if os.path.exists(out_path) == False:
@@ -59,7 +59,8 @@ def recursive(dataset, n1, n2, t, tn, index):
             
             ### 影響力の指標を計算する
             # 次数中心性、PageRank、近接中心性
-            if dataset == "Twitter-mention" or dataset == "APS":
+            #if dataset == "Twitter-mention" or dataset == "APS":
+            if dataset == "Twitter-mention" or dataset == "APS" or dataset == "Twitter-follow" or dataset == "Facebook":
                 cmd = "R --vanilla --slave --args {}.edgelist {}/{}_T{}_tn{}_ {} < c_deg_pr.R >log/c_{}_{}_T{}_tn{}.log".format(link_path, out_path, index, t, tn, directed, dataset, index, t, tn)
             else:
                 cmd = "R --vanilla --slave --args {}.edgelist {}/{}_T{}_tn{}_ {} < c_deg_clo_pr.R >log/c_{}_{}_T{}_tn{}.log".format(link_path, out_path, index, t, tn, directed, dataset, index, t, tn)
@@ -69,8 +70,9 @@ def recursive(dataset, n1, n2, t, tn, index):
             print("End")
 
             # CI
-            if dataset == "Twitter-follow" or dataset == "Facebook":
-                 # adjacency listを出力
+            #if dataset == "Twitter-follow" or dataset == "Facebook":
+            if dataset == "":
+                # adjacency listを出力
                 adjacency_list("{}.edgelist".format(link_path), "{}.adjacencylist".format(link_path), directed)
                 print("New adjacency list is created at {}.adjacencylist".format(link_path))
             
@@ -93,19 +95,20 @@ def recursive(dataset, n1, n2, t, tn, index):
             
             # 計算に含まれなかったノードをランキングの後ろに追加
             #if dataset == "Twitter-follow":
-            idlist = list(idset)
+            idlist = list(idset - set(rank))
+            print("len(idlist) = {}, len(rank) = {}".format(len(idlist), len(rank)))
             random.shuffle(idlist)
+            tmp = []
             for id in idlist:
-                if len(rank) >= idlen:
-                    break
-                if id not in rank:
-                    rank.append(id)
+                tmp.append(id)
+                    
+            rank.extend(tmp)
             print("Padding ranking")
 
             
             # 下位T%のノードを削除したid集合を得る
             ranklen = len(rank)
-            idlen_new = int(ranklen*t*0.01)
+            idlen_new = round(ranklen*t*0.01)
             del rank[ranklen-idlen_new:ranklen]
             idset = set(rank)
             idlen = len(idset)
@@ -122,7 +125,7 @@ def recursive(dataset, n1, n2, t, tn, index):
             link_path = "./{}/noise_reduction/{}/data/reducted_{}_T{}_tn{}".format(dataset, n, index, t, tn+1)
             # ディレクトリがなければ作る
             if os.path.exists("./{}/noise_reduction/{}/data".format(dataset, n)) == False:
-                os.makedirs(link_path)
+                os.makedirs("./{}/noise_reduction/{}/data".format(dataset, n))
             # edgelistを出力
             with open("{}.edgelist".format(link_path),"w") as f:
                 f.writelines(lines)

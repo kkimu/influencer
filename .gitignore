@@ -15,3 +15,5 @@ sampling/**
 result/*
 work/result/*
 noise_reduction/
+*.zip
+analysis/
