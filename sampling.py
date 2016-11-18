@@ -134,45 +134,7 @@ def select_bfs(num, idlist, al):
                             queue.append(nei)
                     else:
                         break
-
     return target_id
-
-# 幅優先探索 複数のシードノードを用いる場合
-def select_bfs_multiseeds(num, idlist, al, seednum):
-    target_id = defaultdict(int)
-    random.shuffle(idlist)
-    queue = []*seednum
-    for i in range(0,seednum):
-        queue.append([])
-    
-    idnum = 0
-    while idnum < num:
-        for i in range(0,seednum):
-            if idnum < num:
-                if len(queue[i]) == 0:
-                    node = random.choice(idlist)
-                    while target_id[node] == 1:
-                        node = random.choice(idlist)
-                        
-                    target_id[node] = 1
-                    queue[i].append(node)
-                    idnum += 1
-                    
-                else:
-                    node = queue[i].pop(0)
-                    if len(al[node]) >= 1:
-                        for nei in al[node]:
-                            if idnum < num:
-                                if target_id[nei] != 1:
-                                    target_id[nei] = 1
-                                    idnum += 1
-                                    queue[i].append(nei)
-                            else:
-                                break
-            else:
-                break
-            
-    return target_id    
 
 
 # pathのエッジリストからidの集合を得る
