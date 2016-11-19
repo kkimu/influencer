@@ -52,8 +52,8 @@ def rand(dataset, n1, n2):
             print("{} {}per Time:{}".format(n,p,time.time() -t1))
         print("{} Time:{}".format(n,time.time() -t0))
 
-# 幅優先探索
-def bfs(dataset, n1, n2, seednum):
+# ランダム以外
+def sampling(dataset, n1, n2, method):
     t0 = time.time()
     t1 = time.time()
     
@@ -81,13 +81,16 @@ def bfs(dataset, n1, n2, seednum):
             random.shuffle(idlist)
 
             # 取得するノードを選択
-            target_id = select_bfs(num, idlist, al)  
+            if method == "bfs":
+                target_id = select_bfs(num, idlist, al)
+            elif method == "dfs":
+                target_id = select_dfs(num, idlist, al)
             print(len(target_id),"\t",end="")
 
 
             # パスとファイル名を指定して出力
             path = "{}/sampling/{}".format(dataset, n)
-            filename = "bfs_{}per_seed{}".format(p,seednum)
+            filename = "{}_{}per".format(method, p)
             output(path, filename, link_path, target_id)
 
             
@@ -110,18 +113,7 @@ def select_bfs(num, idlist, al):
     idnum = 0
     i = 0
     while idnum < num:
-        if len(queue) == 0:
-            for j in range(i,len(idlist)):
-                node = idlist[j]
-                if target_id[node] != 1:
-                    target_id[node] = 1
-                    queue.append(node)
-                    idnum += 1
-                    i += 1
-                    break
-                else:
-                    i += 1
-        else:
+        if len(queue) > 0:
             node = queue.pop(0)
             if len(al[node]) >= 1:
                 neighbors = al[node]
@@ -134,7 +126,53 @@ def select_bfs(num, idlist, al):
                             queue.append(nei)
                     else:
                         break
+        else:
+            
+            for j in range(i,len(idlist)):
+                node = idlist[j]
+                if target_id[node] != 1:
+                    target_id[node] = 1
+                    queue.append(node)
+                    idnum += 1
+                    i += 1
+                    break
+                else:
+                    i += 1
     return target_id
+
+
+# 幅優先探索でidリスト全体からnumだけノードを選択する
+def select_dfs(num, idlist, al):
+    target_id = defaultdict(int)
+    random.shuffle(idlist)
+    stack = []
+    idnum = 0
+    i = 0
+    while idnum < num:
+        if len(stack) > 0:
+            node = stack.pop()
+            if node not in target_id:
+                target_id[node] = 1
+                idnum += 1
+                neighbors = al[node]
+                if len(neighbors) >= 1:
+                    random.shuffle(neighbors)
+                    for nei in neighbors:
+                        if nei not in target_id:
+                            stack.append(nei)
+        else:
+            for j in range(i,len(idlist)):
+                node = idlist[j]
+                if node not in target_id:
+                    stack.append(node)
+                    i += 1
+                    break
+                else:
+                    i += 1
+
+    return target_id
+
+
 
 
 # pathのエッジリストからidの集合を得る
@@ -192,18 +230,8 @@ if __name__ == "__main__":
     n2 = int(argv[3])
     method = str(argv[4])
 
-    if len(argv) < 6:
-        seednum = 1
-    else:
-        seednum = int(argv[5])
-
+        
     if method == "rand":
         rand(dataset, n1, n2)
-    elif method == "bfs":
-        bfs(dataset, n1, n2, seednum)
-    elif method == "dfs":
-        bfs(dataset, n1, n2, seednum)
-    elif method == "sec":
-        bfs(dataset, n1, n2, seednum)
     else:
-        sys.exit(1)
+        sampling(dataset, n1, n2, method)
